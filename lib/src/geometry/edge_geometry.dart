@@ -1,6 +1,9 @@
 import 'package:flow_core/flow_core.dart';
 import 'package:meta/meta.dart';
 
+import 'port_geometry.dart';
+import 'segment_geometry.dart';
+
 /// Returns the polyline that represents [edge] on [page] for hit testing.
 ///
 /// Straight-line by default, with waypoints inserted between source and

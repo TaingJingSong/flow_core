@@ -7,15 +7,9 @@ import '../model/flow_page.dart';
 /// Commands are the only things allowed to write to [document]. The stack
 /// owns a single instance; the controller reads it back.
 class FlowDocumentState {
-  FlowDocumentState(this._document);
+  FlowDocumentState(this.document);
 
-  FlowDocument _document;
+  FlowDocument document;
 
-  FlowDocument get document => _document;
-
-  set document(FlowDocument value) {
-    _document = value;
-  }
-
-  FlowPage? page(FlowId pageId) => _document.pageById(pageId);
+  FlowPage? page(FlowId pageId) => document.pageById(pageId);
 }

@@ -127,7 +127,10 @@ void main() {
           ),
         ],
       ));
-      final encodedNode = (json['pages']! as List).first['nodes'][0] as Map;
+      final pages = json['pages']! as List<Object?>;
+      final firstPage = pages.first! as Map<String, Object?>;
+      final nodes = firstPage['nodes']! as List<Object?>;
+      final encodedNode = nodes.first! as Map<String, Object?>;
       expect(encodedNode.containsKey('label'), isFalse);
       expect(encodedNode.containsKey('parentGroupId'), isFalse);
       expect(encodedNode.containsKey('layerId'), isFalse);
@@ -158,16 +161,22 @@ void main() {
         ],
       );
       final json = decoded.encode(doc);
-      final nodeJson = ((json['pages']! as List).first as Map)['nodes'][0]
-          as Map;
-      expect((nodeJson['style'] as Map)['fillColor'], '#80123456');
-      expect((nodeJson['style'] as Map)['strokeColor'], '#FFAABBCC');
+      final pages = json['pages']! as List<Object?>;
+      final firstPage = pages.first! as Map<String, Object?>;
+      final nodes = firstPage['nodes']! as List<Object?>;
+      final nodeJson = nodes.first! as Map<String, Object?>;
+      final styleMap = nodeJson['style']! as Map<String, Object?>;
+      expect(styleMap['fillColor'], '#80123456');
+      expect(styleMap['strokeColor'], '#FFAABBCC');
 
       // Short form on decode
-      final tampered = jsonDecode(jsonEncode(json)) as Map;
-      final tNode =
-          ((tampered['pages']! as List).first as Map)['nodes'][0] as Map;
-      (tNode['style'] as Map)['fillColor'] = '#112233';
+      final tampered = jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
+      final tamperedPages = tampered['pages']! as List<dynamic>;
+      final tamperedFirstPage = tamperedPages.first as Map<String, dynamic>;
+      final tamperedNodes = tamperedFirstPage['nodes']! as List<dynamic>;
+      final tNode = tamperedNodes.first as Map<String, dynamic>;
+      final tStyle = tNode['style'] as Map<String, dynamic>;
+      tStyle['fillColor'] = '#112233';
       final restored = decoded.decode(tampered.cast<String, Object?>());
       final restoredNode = restored.pages.first.nodes.values.first;
       expect(restoredNode.style.fillColor, const FlowColor(0xFF112233));
