@@ -44,11 +44,11 @@ abstract final class StyleCodec {
         if (s.fillColor != null) 'fillColor': ColorCodec.encode(s.fillColor!),
         if (s.strokeColor != null)
           'strokeColor': ColorCodec.encode(s.strokeColor!),
-        'strokeWidth': s.strokeWidth,
+        if (s.strokeWidth != null) 'strokeWidth': s.strokeWidth,
         if (s.strokeDashPattern != null)
           'strokeDashPattern': s.strokeDashPattern,
-        'cornerRadius': s.cornerRadius,
-        'opacity': s.opacity,
+        if (s.cornerRadius != null) 'cornerRadius': s.cornerRadius,
+        if (s.opacity != null) 'opacity': s.opacity,
         if (s.shadow != null) 'shadow': ShadowCodec.encode(s.shadow!),
         if (s.textStyle != null)
           'textStyle': TextStyleCodec.encode(s.textStyle!),
@@ -59,10 +59,12 @@ abstract final class StyleCodec {
     return FlowStyle(
       fillColor: ColorCodec.decodeOrNull(v['fillColor']),
       strokeColor: ColorCodec.decodeOrNull(v['strokeColor']),
-      strokeWidth: asDouble(v['strokeWidth'], 1.0),
+      strokeWidth:
+          v['strokeWidth'] == null ? null : asDouble(v['strokeWidth'], 1.0),
       strokeDashPattern: asDoubleListOrNull(v['strokeDashPattern']),
-      cornerRadius: asDouble(v['cornerRadius'], 0.0),
-      opacity: asDouble(v['opacity'], 1.0),
+      cornerRadius:
+          v['cornerRadius'] == null ? null : asDouble(v['cornerRadius'], 0.0),
+      opacity: v['opacity'] == null ? null : asDouble(v['opacity'], 1.0),
       shadow: ShadowCodec.decodeOrNull(v['shadow']),
       textStyle: TextStyleCodec.decodeOrNull(v['textStyle']),
     );

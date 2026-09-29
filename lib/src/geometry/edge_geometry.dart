@@ -41,7 +41,14 @@ FlowRect edgeBounds(FlowEdge edge, FlowPage page) {
     if (p.y < top) top = p.y;
     if (p.y > bottom) bottom = p.y;
   }
-  return FlowRect.fromLTWH(left, top, right - left, bottom - top);
+  final width = right - left;
+  final height = bottom - top;
+  return FlowRect.fromLTWH(
+    width == 0 ? left - 1 : left,
+    height == 0 ? top - 1 : top,
+    width == 0 ? 2 : width,
+    height == 0 ? 2 : height,
+  );
 }
 
 /// Whether any segment of [edge] intersects [rect].

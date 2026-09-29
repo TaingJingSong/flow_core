@@ -164,9 +164,11 @@ class _Tree {
   final Map<FlowId, FlowLayoutNode> nodeById;
 
   double _width = 0;
+  final Map<FlowId, double> _subtreeWidths = <FlowId, double>{};
 
   /// Computes the total width of the tree along the perpendicular axis.
   double computeWidth(double siblingSpacing, FlowLayoutDirection direction) {
+    _subtreeWidths.clear();
     _width = _computeWidth(root, siblingSpacing, direction);
     return _width;
   }
@@ -179,14 +181,19 @@ class _Tree {
     final node = nodeById[id]!;
     final self = direction.isVertical ? node.size.width : node.size.height;
     final kids = children[id]!;
-    if (kids.isEmpty) return self;
+    if (kids.isEmpty) {
+      _subtreeWidths[id] = self;
+      return self;
+    }
 
     var total = 0.0;
     for (var i = 0; i < kids.length; i++) {
       if (i > 0) total += siblingSpacing;
       total += _computeWidth(kids[i], siblingSpacing, direction);
     }
-    return math.max(self, total);
+    final w = math.max(self, total);
+    _subtreeWidths[id] = w;
+    return w;
   }
 
   void place(
@@ -226,13 +233,18 @@ class _Tree {
     if (kids.isEmpty) {
       perpCenter = leftEdge + self / 2;
     } else {
-      var cursor = leftEdge;
+      var totalKidsWidth = 0.0;
+      for (var i = 0; i < kids.length; i++) {
+        if (i > 0) totalKidsWidth += siblingSpacing;
+        totalKidsWidth += _subtreeWidths[kids[i]]!;
+      }
+      final kidsOffset =
+          self > totalKidsWidth ? (self - totalKidsWidth) / 2 : 0.0;
+      var cursor = leftEdge + kidsOffset;
       final childCenters = <double>[];
       for (var i = 0; i < kids.length; i++) {
         if (i > 0) cursor += siblingSpacing;
-        final childNode = nodeById[kids[i]]!;
-        final childSelf =
-            direction.isVertical ? childNode.size.width : childNode.size.height;
+        final childWidth = _subtreeWidths[kids[i]]!;
         final c = _placeRecursive(
           kids[i],
           cursor,
@@ -243,7 +255,7 @@ class _Tree {
           depth + 1,
         );
         childCenters.add(c);
-        cursor += childSelf;
+        cursor += childWidth;
       }
       perpCenter = (childCenters.first + childCenters.last) / 2;
     }

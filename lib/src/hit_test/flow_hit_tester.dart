@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../geometry/edge_geometry.dart';
 import '../geometry/flow_point.dart';
 import '../geometry/flow_rect.dart';
@@ -51,11 +53,12 @@ class FlowHitTester {
   /// Nodes and ports are always reported; edges are reported only if no
   /// node was hit, to reduce noise during drags.
   FlowHitResult hitTestPoint(FlowPoint point) {
+    final queryRadius = math.max(portRadius, tolerance);
     final queryRect = FlowRect.fromLTWH(
-      point.x - portRadius,
-      point.y - portRadius,
-      portRadius * 2,
-      portRadius * 2,
+      point.x - queryRadius,
+      point.y - queryRadius,
+      queryRadius * 2,
+      queryRadius * 2,
     );
 
     final candidateNodes = _candidateNodes(queryRect);

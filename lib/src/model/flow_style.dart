@@ -15,23 +15,23 @@ class FlowStyle {
   const FlowStyle({
     this.fillColor,
     this.strokeColor,
-    this.strokeWidth = 1.0,
+    this.strokeWidth,
     this.strokeDashPattern,
-    this.cornerRadius = 0.0,
-    this.opacity = 1.0,
+    this.cornerRadius,
+    this.opacity,
     this.shadow,
     this.textStyle,
   });
 
   final FlowColor? fillColor;
   final FlowColor? strokeColor;
-  final double strokeWidth;
+  final double? strokeWidth;
 
   /// Dash pattern in logical pixels, e.g. `[4, 2]` = 4 on, 2 off.
   final List<double>? strokeDashPattern;
 
-  final double cornerRadius;
-  final double opacity;
+  final double? cornerRadius;
+  final double? opacity;
   final FlowShadow? shadow;
 
   /// Default text style for labels that don't specify their own.
@@ -40,23 +40,26 @@ class FlowStyle {
   FlowStyle copyWith({
     Object? fillColor = _unset,
     Object? strokeColor = _unset,
-    double? strokeWidth,
+    Object? strokeWidth = _unset,
     Object? strokeDashPattern = _unset,
-    double? cornerRadius,
-    double? opacity,
+    Object? cornerRadius = _unset,
+    Object? opacity = _unset,
     Object? shadow = _unset,
     Object? textStyle = _unset,
   }) =>
       FlowStyle(
-        fillColor: fillColor == _unset ? this.fillColor : fillColor as FlowColor?,
+        fillColor:
+            fillColor == _unset ? this.fillColor : fillColor as FlowColor?,
         strokeColor:
             strokeColor == _unset ? this.strokeColor : strokeColor as FlowColor?,
-        strokeWidth: strokeWidth ?? this.strokeWidth,
+        strokeWidth:
+            strokeWidth == _unset ? this.strokeWidth : strokeWidth as double?,
         strokeDashPattern: strokeDashPattern == _unset
             ? this.strokeDashPattern
             : strokeDashPattern as List<double>?,
-        cornerRadius: cornerRadius ?? this.cornerRadius,
-        opacity: opacity ?? this.opacity,
+        cornerRadius:
+            cornerRadius == _unset ? this.cornerRadius : cornerRadius as double?,
+        opacity: opacity == _unset ? this.opacity : opacity as double?,
         shadow: shadow == _unset ? this.shadow : shadow as FlowShadow?,
         textStyle:
             textStyle == _unset ? this.textStyle : textStyle as FlowTextStyle?,
@@ -67,10 +70,10 @@ class FlowStyle {
     return FlowStyle(
       fillColor: other.fillColor ?? fillColor,
       strokeColor: other.strokeColor ?? strokeColor,
-      strokeWidth: other.strokeWidth,
+      strokeWidth: other.strokeWidth ?? strokeWidth,
       strokeDashPattern: other.strokeDashPattern ?? strokeDashPattern,
-      cornerRadius: other.cornerRadius,
-      opacity: other.opacity,
+      cornerRadius: other.cornerRadius ?? cornerRadius,
+      opacity: other.opacity ?? opacity,
       shadow: other.shadow ?? shadow,
       textStyle: other.textStyle ?? textStyle,
     );

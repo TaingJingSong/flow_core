@@ -3,6 +3,7 @@ library;
 
 export 'src/commands/commands.dart';
 export 'src/controller/controller.dart';
+export 'src/format/format.dart';
 export 'src/geometry/geometry.dart';
 export 'src/hit_test/hit_test.dart';
 export 'src/ids/flow_id_generator.dart';
