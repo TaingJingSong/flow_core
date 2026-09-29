@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flow_core/src/layout/layout.dart';
+
 import '../commands/builtin/add_edge_command.dart';
 import '../commands/builtin/add_node_command.dart';
 import '../commands/builtin/move_nodes_command.dart';
@@ -468,5 +470,52 @@ class FlowController {
       groupIds: _selection.groupIds.where(liveGroups.contains).toSet(),
     );
     setSelection(pruned);
+  }
+
+  /// Runs [engine] against the active page and applies the result as a
+  /// single undoable command.
+  ///
+  /// Nodes whose IDs appear in [pinned] are left in place.
+  ///
+  /// Returns the number of nodes moved (0 if nothing changed).
+  int applyLayout(
+    FlowLayoutEngine engine, {
+    FlowLayoutDirection direction = FlowLayoutDirection.topToBottom,
+    FlowLayoutSpacing spacing = const FlowLayoutSpacing(),
+    Set<FlowId> pinned = const <FlowId>{},
+  }) {
+    final page = activePage;
+    if (page == null) return 0;
+    if (page.nodes.isEmpty) return 0;
+
+    final pinnedRects = <FlowId, FlowRect>{
+      for (final id in pinned)
+        if (page.nodes[id] != null) id: page.nodes[id]!.rect,
+    };
+
+    final result = computeLayout(
+      page,
+      engine,
+      direction: direction,
+      spacing: spacing,
+      pinnedRects: pinnedRects,
+    );
+
+    final commands = <FlowCommand>[];
+    for (final entry in result.rects.entries) {
+      final node = page.nodes[entry.key];
+      if (node == null) continue;
+      if (node.rect == entry.value) continue;
+      commands.add(SetNodeRectCommand(
+        pageId: page.id,
+        nodeId: entry.key,
+        rect: entry.value,
+      ));
+    }
+    if (commands.isEmpty) return 0;
+
+    _stack.executeAll(commands);
+    _clearSelectionIfDead();
+    return commands.length;
   }
 }
