@@ -33,8 +33,9 @@ FlowGraph documentToFlowGraph(FlowDocument doc) {
       kind: e.kind,
       sourceArrow: e.sourceArrow,
       targetArrow: e.targetArrow,
+      waypoints: e.waypoints,
       dashed: e.style.strokeDashPattern != null,
-      thick: (e.style.strokeWidth ?? 1.0) > 2.0,
+      thick: (e.style.strokeWidth ?? 0.0) > 2.0,
       meta: e.meta,
       data: e.data,
     );
@@ -48,6 +49,7 @@ FlowGraph documentToFlowGraph(FlowDocument doc) {
       parentId: g.parentGroupId?.value,
       nodeIds: [for (final id in g.childNodeIds) id.value],
       childGroupIds: [for (final id in g.childGroupIds) id.value],
+      rect: g.rect,
       meta: g.meta,
     );
   }

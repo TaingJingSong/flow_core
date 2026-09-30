@@ -47,8 +47,7 @@ class FlowGraphConverter {
 
     final nodes = <FlowId, FlowNode>{};
     for (final gn in graph.nodes.values) {
-      final rect = rects[gn.id] ??
-          FlowRect.fromLTWH(0, 0, defaultNodeSize.width, defaultNodeSize.height);
+      final rect = rects[gn.id] ?? FlowRect.fromLTWH(0, 0, defaultNodeSize.width, defaultNodeSize.height);
       nodes[FlowId(gn.id)] = FlowNode(
         id: FlowId(gn.id),
         type: gn.shape,
@@ -73,6 +72,7 @@ class FlowGraphConverter {
         kind: ge.kind,
         sourceArrow: ge.sourceArrow,
         targetArrow: ge.targetArrow,
+        waypoints: ge.waypoints,
         label: ge.label.isEmpty ? null : FlowLabel(text: ge.label),
         style: _edgeStyle(ge),
         meta: {...ge.meta},
@@ -82,19 +82,25 @@ class FlowGraphConverter {
 
     final groups = <FlowId, FlowGroup>{};
     for (final gg in graph.groups.values) {
-      final childRects = <FlowRect>[];
-      for (final id in gg.nodeIds) {
-        final r = rects[id];
-        if (r != null) childRects.add(r);
-      }
-      if (childRects.isEmpty) continue;
-      var bounds = childRects.first;
-      for (var i = 1; i < childRects.length; i++) {
-        bounds = bounds.union(childRects[i]);
+      FlowRect bounds;
+      if (gg.rect != null) {
+        bounds = gg.rect!;
+      } else {
+        final childRects = <FlowRect>[];
+        for (final id in gg.nodeIds) {
+          final r = rects[id];
+          if (r != null) childRects.add(r);
+        }
+        if (childRects.isEmpty) continue;
+        var acc = childRects.first;
+        for (var i = 1; i < childRects.length; i++) {
+          acc = acc.union(childRects[i]);
+        }
+        bounds = acc.inflate(20);
       }
       groups[FlowId(gg.id)] = FlowGroup(
         id: FlowId(gg.id),
-        rect: bounds.inflate(20),
+        rect: bounds,
         label: gg.label.isEmpty ? null : FlowLabel(text: gg.label),
         childNodeIds: [for (final id in gg.nodeIds) FlowId(id)],
         childGroupIds: [for (final id in gg.childGroupIds) FlowId(id)],
@@ -149,8 +155,7 @@ class FlowGraphConverter {
     }
 
     final registry = layoutRegistry ?? FlowLayoutRegistry();
-    final engine =
-        registry.byId(graph.suggestedLayout) ?? const LayeredLayout();
+    final engine = registry.byId(graph.suggestedLayout) ?? const LayeredLayout();
 
     final input = FlowLayoutInput(
       nodes: [

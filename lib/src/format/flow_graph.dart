@@ -1,10 +1,6 @@
 import 'package:collection/collection.dart';
+import 'package:flow_core/flow_core.dart';
 import 'package:meta/meta.dart';
-
-import '../geometry/flow_rect.dart';
-import '../layout/flow_layout_direction.dart';
-import '../model/flow_arrow_head.dart';
-import '../model/flow_edge_kind.dart';
 
 const _deepEq = DeepCollectionEquality();
 const _mapEq = MapEquality<String, String>();
@@ -173,6 +169,7 @@ class FlowGraphEdge {
     this.kind = FlowEdgeKind.flow,
     this.sourceArrow = FlowArrowHead.none,
     this.targetArrow = FlowArrowHead.filledArrow,
+    this.waypoints = const <FlowPoint>[],
     this.dashed = false,
     this.thick = false,
     this.meta = const <String, String>{},
@@ -188,6 +185,7 @@ class FlowGraphEdge {
   final FlowEdgeKind kind;
   final FlowArrowHead sourceArrow;
   final FlowArrowHead targetArrow;
+  final List<FlowPoint> waypoints;
   final bool dashed;
   final bool thick;
   final Map<String, String> meta;
@@ -203,6 +201,7 @@ class FlowGraphEdge {
     FlowEdgeKind? kind,
     FlowArrowHead? sourceArrow,
     FlowArrowHead? targetArrow,
+    List<FlowPoint>? waypoints,
     bool? dashed,
     bool? thick,
     Map<String, String>? meta,
@@ -220,6 +219,7 @@ class FlowGraphEdge {
         kind: kind ?? this.kind,
         sourceArrow: sourceArrow ?? this.sourceArrow,
         targetArrow: targetArrow ?? this.targetArrow,
+        waypoints: waypoints ?? this.waypoints,
         dashed: dashed ?? this.dashed,
         thick: thick ?? this.thick,
         meta: meta ?? this.meta,
@@ -239,6 +239,7 @@ class FlowGraphEdge {
           other.kind == kind &&
           other.sourceArrow == sourceArrow &&
           other.targetArrow == targetArrow &&
+          const ListEquality<FlowPoint>().equals(other.waypoints, waypoints) &&
           other.dashed == dashed &&
           other.thick == thick &&
           _mapEq.equals(other.meta, meta) &&
@@ -255,6 +256,7 @@ class FlowGraphEdge {
         kind,
         sourceArrow,
         targetArrow,
+        const ListEquality<FlowPoint>().hash(waypoints),
         dashed,
         thick,
         _mapEq.hash(meta),
@@ -270,6 +272,7 @@ class FlowGraphGroup {
     this.parentId,
     this.nodeIds = const <String>[],
     this.childGroupIds = const <String>[],
+    this.rect,
     this.meta = const <String, String>{},
   });
 
@@ -278,6 +281,11 @@ class FlowGraphGroup {
   final String? parentId;
   final List<String> nodeIds;
   final List<String> childGroupIds;
+
+  /// Explicit group bounds. When non-null, the converter uses it verbatim
+  /// instead of computing from children.
+  final FlowRect? rect;
+
   final Map<String, String> meta;
 
   FlowGraphGroup copyWith({
@@ -286,6 +294,7 @@ class FlowGraphGroup {
     Object? parentId = _unset,
     List<String>? nodeIds,
     List<String>? childGroupIds,
+    Object? rect = _unset,
     Map<String, String>? meta,
   }) =>
       FlowGraphGroup(
@@ -294,6 +303,7 @@ class FlowGraphGroup {
         parentId: parentId == _unset ? this.parentId : parentId as String?,
         nodeIds: nodeIds ?? this.nodeIds,
         childGroupIds: childGroupIds ?? this.childGroupIds,
+        rect: rect == _unset ? this.rect : rect as FlowRect?,
         meta: meta ?? this.meta,
       );
 
@@ -307,6 +317,7 @@ class FlowGraphGroup {
           const ListEquality<String>().equals(other.nodeIds, nodeIds) &&
           const ListEquality<String>()
               .equals(other.childGroupIds, childGroupIds) &&
+          other.rect == rect &&
           _mapEq.equals(other.meta, meta);
 
   @override
@@ -316,6 +327,7 @@ class FlowGraphGroup {
         parentId,
         const ListEquality<String>().hash(nodeIds),
         const ListEquality<String>().hash(childGroupIds),
+        rect,
         _mapEq.hash(meta),
       );
 }
