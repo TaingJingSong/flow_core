@@ -8,6 +8,8 @@ analyzer:
   errors:
     missing_required_param: error
     missing_return: error
+  exclude:
+    - "**/*.g.dart"
 
 linter:
   rules:
@@ -17,3 +19,5 @@ linter:
     - prefer_single_quotes
     # - public_member_api_docs
     - unawaited_futures
+
+analyzer_plugins: []

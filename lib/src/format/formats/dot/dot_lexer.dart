@@ -197,8 +197,12 @@ class DotLexer {
     var depth = 1;
     while (_pos < source.length && depth > 0) {
       final c = source[_pos];
-      if (c == '<') depth++;
-      else if (c == '>') depth--;
+      if (c == '<') {
+        depth++;
+      }
+      else if (c == '>') {
+        depth--;
+      }
       _pos++;
     }
     if (depth > 0) {

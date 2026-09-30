@@ -1,8 +1,4 @@
-import 'dart:collection';
-
 import 'package:flow_core/flow_core.dart';
-
-import 'dot_lexer.dart';
 
 /// Recursive-descent parser for Graphviz DOT.
 class DotParser {
@@ -125,15 +121,18 @@ class DotParser {
     }
 
     // Standalone subgraph.
-    if (_checkIdentifier('subgraph') || _check(DotTokenType.lbrace)) {
-      _parseSubgraph();
-      return;
-    }
+    // if (_checkIdentifier('subgraph') || _check(DotTokenType.lbrace)) {
+    //   _parseSubgraph();
+    //   return;
+    // }
 
     _parseNodeOrEdge();
   }
 
   void _parseNodeOrEdge() {
+    final startsWithSubgraph =
+        _checkIdentifier('subgraph') || _check(DotTokenType.lbrace);
+
     var left = _parseEndpoint();
 
     if (_check(DotTokenType.edgeDirected) ||
@@ -141,23 +140,27 @@ class DotParser {
       while (_check(DotTokenType.edgeDirected) ||
           _check(DotTokenType.edgeUndirected)) {
         _advance();
+
         final right = _parseEndpoint();
         final attrs = _check(DotTokenType.lbracket)
             ? _parseAttrList()
             : const <String, String>{};
-        for (final l in left) {
-          for (final r in right) {
-            _addEdge(l, r, attrs);
+
+        for (final source in left) {
+          for (final target in right) {
+            _addEdge(source, target, attrs);
           }
         }
+
         left = right;
       }
-    } else {
+    } else if (!startsWithSubgraph) {
       final attrs = _check(DotTokenType.lbracket)
           ? _parseAttrList()
           : const <String, String>{};
-      for (final e in left) {
-        _declareNode(e.id, attrs);
+
+      for (final endpoint in left) {
+        _declareNode(endpoint.id, attrs);
       }
     }
   }
@@ -419,7 +422,7 @@ class DotParser {
   }
 
   FlowGraph _build() {
-    final nodes = LinkedHashMap<String, FlowGraphNode>();
+    final nodes = <String, FlowGraphNode>{};
     for (final entry in _nodes.entries) {
       final acc = entry.value;
       final attrs = acc.attrs;
@@ -432,12 +435,12 @@ class DotParser {
       );
     }
 
-    final edges = LinkedHashMap<String, FlowGraphEdge>();
+    final edges = <String, FlowGraphEdge>{};
     for (final e in _edges) {
       edges[e.id] = e;
     }
 
-    final groups = LinkedHashMap<String, FlowGraphGroup>();
+    final groups = <String, FlowGraphGroup>{};
     for (final entry in _groups.entries) {
       final g = entry.value;
       groups[entry.key] = FlowGraphGroup(

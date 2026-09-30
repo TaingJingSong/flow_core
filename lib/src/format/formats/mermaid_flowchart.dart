@@ -356,12 +356,16 @@ class _MermaidFlowchartParser {
     final start = s.pos;
 
     // Simple operators, longest first.
-    if (s.match('-.->')) return const _ParsedEdge(label: '', hasArrow: true, dashed: true);
-    if (s.match('-.-'))  return const _ParsedEdge(label: '', hasArrow: false, dashed: true);
-    if (s.match('==>'))  return const _ParsedEdge(label: '', hasArrow: true, thick: true);
-    if (s.match('==='))  return const _ParsedEdge(label: '', hasArrow: false, thick: true);
-    if (s.match('-->'))  return const _ParsedEdge(label: '', hasArrow: true);
-    if (s.match('---'))  return const _ParsedEdge(label: '', hasArrow: false);
+    if (s.match('-.->'))
+      return const _ParsedEdge(label: '', hasArrow: true, dashed: true);
+    if (s.match('-.-'))
+      return const _ParsedEdge(label: '', hasArrow: false, dashed: true);
+    if (s.match('==>'))
+      return const _ParsedEdge(label: '', hasArrow: true, thick: true);
+    if (s.match('==='))
+      return const _ParsedEdge(label: '', hasArrow: false, thick: true);
+    if (s.match('-->')) return const _ParsedEdge(label: '', hasArrow: true);
+    if (s.match('---')) return const _ParsedEdge(label: '', hasArrow: false);
 
     s.pos = start;
 
@@ -448,6 +452,39 @@ String _emitMermaid(FlowGraph graph) {
   buffer.writeln('flowchart ${_directionToMermaid(graph.suggestedDirection)}');
 
   final declared = <String>{};
+
+  void emitGroup(FlowGraphGroup g, String indent) {
+    if (g.label.isNotEmpty && g.label != g.id) {
+      buffer.writeln('$indent    subgraph ${g.id}[${g.label}]');
+    } else {
+      buffer.writeln('$indent    subgraph ${g.id}');
+    }
+    for (final childId in g.childGroupIds) {
+      final child = graph.groups[childId];
+      if (child != null) {
+        emitGroup(child, '$indent    ');
+      }
+    }
+    final nodeIds = {
+      ...g.nodeIds,
+      for (final n in graph.nodes.values)
+        if (n.groupId == g.id) n.id,
+    };
+    for (final nodeId in nodeIds) {
+      final node = graph.nodes[nodeId];
+      if (node != null && declared.add(node.id)) {
+        buffer.writeln('$indent        ${_emitNode(node)}');
+      }
+    }
+    buffer.writeln('$indent    end');
+  }
+
+  for (final g in graph.groups.values) {
+    if (g.parentId == null || !graph.groups.containsKey(g.parentId)) {
+      emitGroup(g, '');
+    }
+  }
+
   for (final e in graph.edges.values) {
     final src = graph.nodes[e.source];
     if (src != null && declared.add(src.id)) {
@@ -483,7 +520,7 @@ String _directionToMermaid(FlowLayoutDirection d) {
 }
 
 String _emitNode(FlowGraphNode n) {
-  if (n.label.isEmpty || n.label == n.id) return n.id;
+  if (n.label.isEmpty && n.shape == 'rectangle') return n.id;
   final l = n.label.replaceAll('"', r'\"');
   switch (n.shape) {
     case 'rounded':
@@ -577,8 +614,7 @@ class _Scanner {
   bool get atEnd => pos >= source.length;
 
   void skipWhitespace() {
-    while (pos < source.length &&
-        (source[pos] == ' ' || source[pos] == '\t')) {
+    while (pos < source.length && (source[pos] == ' ' || source[pos] == '\t')) {
       pos++;
     }
   }
@@ -617,8 +653,8 @@ class _Scanner {
   static bool _isIdentifierChar(String c) {
     final code = c.codeUnitAt(0);
     return (code >= 0x30 && code <= 0x39) || // 0-9
-        (code >= 0x41 && code <= 0x5A) ||     // A-Z
-        (code >= 0x61 && code <= 0x7A) ||     // a-z
+        (code >= 0x41 && code <= 0x5A) || // A-Z
+        (code >= 0x61 && code <= 0x7A) || // a-z
         c == '_' ||
         c == '-';
   }

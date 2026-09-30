@@ -12,6 +12,7 @@ sealed class FlowEvent {
 
 /// The whole document was replaced. Fired on load, reset, and on undo/redo.
 class DocumentChanged extends FlowEvent {
+  /// The whole document was replaced. Fired on load, reset, and on undo/redo.
   const DocumentChanged(this.document);
 
   final FlowDocument document;
