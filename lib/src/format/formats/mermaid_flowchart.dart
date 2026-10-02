@@ -356,14 +356,18 @@ class _MermaidFlowchartParser {
     final start = s.pos;
 
     // Simple operators, longest first.
-    if (s.match('-.->'))
+    if (s.match('-.->')) {
       return const _ParsedEdge(label: '', hasArrow: true, dashed: true);
-    if (s.match('-.-'))
+    }
+    if (s.match('-.-')) {
       return const _ParsedEdge(label: '', hasArrow: false, dashed: true);
-    if (s.match('==>'))
+    }
+    if (s.match('==>')) {
       return const _ParsedEdge(label: '', hasArrow: true, thick: true);
-    if (s.match('==='))
+    }
+    if (s.match('===')) {
       return const _ParsedEdge(label: '', hasArrow: false, thick: true);
+    }
     if (s.match('-->')) return const _ParsedEdge(label: '', hasArrow: true);
     if (s.match('---')) return const _ParsedEdge(label: '', hasArrow: false);
 
